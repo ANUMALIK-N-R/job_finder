@@ -1,0 +1,33 @@
+name: Daily Scraper
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Runs daily at 2 AM UTC
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run scraper
+        run: |
+          python job_scraper.py
+
+      - name: Commit new data
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add data/latest_jobs.csv
+          git commit -m "Auto-update job data"
+          git push
