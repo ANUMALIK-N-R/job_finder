@@ -5,7 +5,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.cluster.hierarchy import fcluster
 import smtplib
 from email.mime.text import MIMEText
-import os
 
 # Load model and data
 vectorizer = joblib.load('vectorizer.pkl')
@@ -22,7 +21,8 @@ recipient_email = st.text_input("Enter recipient email (where alerts will be sen
 if st.button("Check for New Jobs & Subscribe"):
     if not user_email or not user_password or not recipient_email or not skill_interest:
         st.error("Please fill in all fields.")
-    else:
+   else:
+    import os
 
     file_path = "data/latest_jobs.csv"
 
