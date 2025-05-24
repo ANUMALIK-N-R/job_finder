@@ -22,7 +22,12 @@ if st.button("Check for New Jobs & Subscribe"):
     if not user_email or not user_password or not recipient_email or not skill_interest:
         st.error("Please fill in all fields.")
     else:
-        df = pd.read_csv("data/latest_jobs.csv")
+    import os
+
+    file_path = "data/latest_jobs.csv"
+
+    if os.path.exists(file_path):
+        df = pd.read_csv(file_path)
 
         # Filter jobs with user skill
         filtered = df[df['Skills'].str.contains(skill_interest, case=False, na=False)]
@@ -49,3 +54,5 @@ if st.button("Check for New Jobs & Subscribe"):
                 st.error(f"Failed to send email: {e}")
         else:
             st.warning(f"No new jobs found for skill: {skill_interest}")
+    else:
+        st.warning("Job data not available yet. Please check back later.")
