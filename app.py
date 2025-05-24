@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.cluster.hierarchy import fcluster
 import smtplib
 from email.mime.text import MIMEText
+import os
 
 # Load model and data
 vectorizer = joblib.load('vectorizer.pkl')
@@ -21,38 +22,39 @@ recipient_email = st.text_input("Enter recipient email (where alerts will be sen
 if st.button("Check for New Jobs & Subscribe"):
     if not user_email or not user_password or not recipient_email or not skill_interest:
         st.error("Please fill in all fields.")
-   else:
-    import os
-
-    file_path = "data/latest_jobs.csv"
-
-    if os.path.exists(file_path):
-        df = pd.read_csv(file_path)
-
-        # Filter jobs with user skill
-        filtered = df[df['Skills'].str.contains(skill_interest, case=False, na=False)]
-
-        if not filtered.empty:
-            st.success(f"Found {len(filtered)} jobs with your skill '{skill_interest}'")
-            st.dataframe(filtered[['Title', 'Company', 'Location', 'Skills']])
-
-            # Prepare email body
-            body = "\n\n".join(filtered.apply(
-                lambda row: f"{row['Title']} at {row['Company']} ({row['Location']})\nSkills: {row['Skills']}", axis=1))
-            msg = MIMEText(body)
-            msg['Subject'] = f"Job Alert: {skill_interest} positions found"
-            msg['From'] = user_email
-            msg['To'] = recipient_email
-
-            # Send email using user-provided credentials
-            try:
-                with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-                    server.login(user_email, user_password)
-                    server.send_message(msg)
-                st.success("Email sent successfully!")
-            except Exception as e:
-                st.error(f"Failed to send email: {e}")
-        else:
-            st.warning(f"No new jobs found for skill: {skill_interest}")
     else:
-        st.warning("Job data not available yet. Please check back later.")
+        file_path = "data/latest_jobs.csv"
+
+        if os.path.exists(file_path):
+            df = pd.read_csv(file_path)
+
+            # Optional: Add cluster column
+            # df['Cluster'] = fcluster(Z, 4, criterion='maxclust')
+
+            # Filter jobs with user skill
+            filtered = df[df['Skills'].str.contains(skill_interest, case=False, na=False)]
+
+            if not filtered.empty:
+                st.success(f"Found {len(filtered)} jobs with your skill '{skill_interest}'")
+                st.dataframe(filtered[['Title', 'Company', 'Location', 'Skills']])
+
+                # Prepare email body
+                body = "\n\n".join(filtered.apply(
+                    lambda row: f"{row['Title']} at {row['Company']} ({row['Location']})\nSkills: {row['Skills']}", axis=1))
+                msg = MIMEText(body)
+                msg['Subject'] = f"Job Alert: {skill_interest} positions found"
+                msg['From'] = user_email
+                msg['To'] = recipient_email
+
+                # Send email
+                try:
+                    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                        server.login(user_email, user_password)
+                        server.send_message(msg)
+                    st.success("Email sent successfully!")
+                except Exception as e:
+                    st.error(f"Failed to send email: {e}")
+            else:
+                st.warning(f"No new jobs found for skill: {skill_interest}")
+        else:
+            st.warning("Job data not available yet. Please check back later.")
