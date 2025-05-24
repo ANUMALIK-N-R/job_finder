@@ -22,7 +22,7 @@ if st.button("Check for New Jobs & Subscribe"):
     if not user_email or not user_password or not recipient_email or not skill_interest:
         st.error("Please fill in all fields.")
     else:
-        df = pd.read_csv("latest_jobs.csv")
+        df = pd.read_csv("data/latest_jobs.csv")
 
         # Filter jobs with user skill
         filtered = df[df['Skills'].str.contains(skill_interest, case=False, na=False)]
